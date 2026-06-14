@@ -1,14 +1,22 @@
-import React from 'react';
 import {useGSAP} from "@gsap/react";
 import gsap from "gsap";
-import { SplitText } from 'gsap/all'
+// import { SplitText } from 'gsap/all'
+import { SplitText, ScrollTrigger } from 'gsap/all'; // 1. Added ScrollTrigger here
+import { useRef } from 'react';
+import {useMediaQuery} from "react-responsive";
 
 
 
 const Hero = () => {
+    const videoRef = useRef();
+
+    const isMobile = useMediaQuery({ maxWidth: 767 });
+
+
     useGSAP(() => {
         const heroSplit = new SplitText('.title', {type: 'chars, words'})
         const paragraphSplit = new SplitText('.subtitle', {type: 'lines'})
+        const video = videoRef.current;
 
         heroSplit.chars.forEach((char) => char.classList.add('text-gradient'));
 
@@ -39,6 +47,79 @@ const Hero = () => {
         })
             .to('.right-leaf', { y: 200 }, 0)
             .to('.left-leaf', { y: -200 }, 0)
+
+        const startValue = isMobile ? 'top 50%' : 'center 60%';
+        const endValue = isMobile ? '120% top' : 'bottom top';
+
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: 'video',
+                start: startValue,
+                end: endValue,
+                scrub: true,
+                pin: true,
+            }
+        })
+
+        videoRef.current.onloadedmetadata =  () => {
+            tl.to(videoRef.current, {
+                currentTime: videoRef.current.duration
+            })
+        }
+
+        // const animateVideo = () => {
+        //     if (!video?.duration) return;
+        //
+        //     video.pause();
+        //
+        //     const videoTimeline = gsap.timeline({
+        //         scrollTrigger: {
+        //             trigger: '.video',
+        //             start: startValue,
+        //             end: endValue,
+        //             scrub: true,
+        //
+        //         }
+        //     });
+        //
+        //     videoTimeline
+        //         .fromTo('.video',
+        //             {
+        //                 clipPath: isMobile
+        //                     ? 'inset(20% 10% 20% 10% round 24px)'
+        //                     : 'inset(18% 20% 18% 20% round 32px)',
+        //                 scale: isMobile ? 0.82 : 0.72,
+        //             },
+        //             {
+        //                 clipPath: 'inset(0% 0% 0% 0% round 0px)',
+        //                 scale: 1,
+        //                 ease: 'none',
+        //             },
+        //             0
+        //         )
+        //         .fromTo(video,
+        //             { currentTime: 0 },
+        //             {
+        //                 currentTime: video.duration,
+        //                 ease: 'none',
+        //             },
+        //             0
+        //         );
+        // };
+        //
+        // if (video?.readyState >= 1) {
+        //     animateVideo();
+        // } else {
+        //     video?.addEventListener('loadedmetadata', animateVideo, { once: true });
+        // }
+        //
+        // return () => {
+        //     video?.removeEventListener('loadedmetadata', animateVideo);
+        //     heroSplit.revert();
+        //     paragraphSplit.revert();
+        // };
+
+        // { dependencies: [isMobile], revertOnUpdate: true });
     }, []);
 
     return (
@@ -57,7 +138,7 @@ const Hero = () => {
                         </div>
 
                         <div className="view-cocktails">
-                            <p className="subtitle">Every cocktail on our menu is a blend of premium ingredients, creative flair, and timeless recipes — designed to delight your senses. </p>
+                            <p className="subtitle">Every cocktail on our menu is a blend of premium  ingredients, creative flair, and timeless recipes — designed to delight your senses. </p>
                             <a href="#cocktails">View Cocktails</a>
                         </div>
 
@@ -65,6 +146,17 @@ const Hero = () => {
                 </div>
 
             </section>
+
+            <div className="video absolute inset-0">
+                <video
+                       ref={videoRef}
+                    src="/videos/output.mp4"
+                       muted
+                       playsInline
+                       preload="auto"
+
+                />
+            </div>
 
         </>
     );
